@@ -42,7 +42,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     if (data.SourceStorageAccountKey == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass SourceStorageAccountKey in the input object" });
     log.Info("Input - File Name : " + data.FileName);
-    log.Info("Input - File Content : " + data.FileContent);
+    //log.Info("Input - File Content : " + data.FileContent);
     log.Info("Input - SourceStorageAccountName : " + data.SourceStorageAccountName);
     log.Info("Input - SourceStorageAccountKey : " + data.SourceStorageAccountKey);
     string _sourceStorageAccountName = data.SourceStorageAccountName;
