@@ -91,7 +91,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     return req.CreateResponse(HttpStatusCode.OK, new
     {
-        AssetId = asset.Id,
+        AssetId = assetid,
     });
 }
 
@@ -252,7 +252,7 @@ public static string ConfigureWidevineLicenseTemplate()
     return configuration;
 }
 
-private static byte[] GetRandomBuffer(int length)
+public static byte[] GetRandomBuffer(int length)
 {
     var returnValue = new byte[length];
 
