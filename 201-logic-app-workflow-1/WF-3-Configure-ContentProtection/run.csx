@@ -70,7 +70,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             Guid keyId = Guid.NewGuid();
             byte[] contentKey = GetRandomBuffer(16);
 
-            IContentKey key = _mediaContext.ContentKeys.Create(
+            IContentKey key = _context.ContentKeys.Create(
                                     keyId,
                                     contentKey,
                                     "ContentKey",
@@ -80,7 +80,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             asset.ContentKeys.Add(key);
            
             AddOpenAuthorizationPolicy(key);
-            CreateAssetDeliveryPolicy(assetid, key);
+            CreateAssetDeliveryPolicy(asset, key);
         }
     }
     catch (Exception ex)
@@ -96,7 +96,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 }
 
 
-public void AddOpenAuthorizationPolicy(IContentKey contentKey)
+public static void AddOpenAuthorizationPolicy(IContentKey contentKey)
 {
 
     // Create ContentKeyAuthorizationPolicy with Open restrictions 
@@ -141,7 +141,7 @@ public void AddOpenAuthorizationPolicy(IContentKey contentKey)
 }
 
 
-public void CreateAssetDeliveryPolicy(IAsset asset, IContentKey key)
+public static void CreateAssetDeliveryPolicy(IAsset asset, IContentKey key)
 {
 
     // Get the PlayReady license service URL.
@@ -167,7 +167,7 @@ public void CreateAssetDeliveryPolicy(IAsset asset, IContentKey key)
 
         };
 
-    var assetDeliveryPolicy = _mediaContext.AssetDeliveryPolicies.Create(
+    var assetDeliveryPolicy = _context.AssetDeliveryPolicies.Create(
             "AssetDeliveryPolicy",
         AssetDeliveryPolicyType.DynamicCommonEncryption,
         AssetDeliveryProtocol.Dash,
@@ -180,7 +180,7 @@ public void CreateAssetDeliveryPolicy(IAsset asset, IContentKey key)
 }
 
 
-public string ConfigurePlayReadyLicenseTemplate()
+public static string ConfigurePlayReadyLicenseTemplate()
 {
     // The following code configures PlayReady License Template using .NET classes
     // and returns the XML string.
@@ -226,7 +226,7 @@ public string ConfigurePlayReadyLicenseTemplate()
     return MediaServicesLicenseTemplateSerializer.Serialize(responseTemplate);
 }
 
-public string ConfigureWidevineLicenseTemplate()
+public static string ConfigureWidevineLicenseTemplate()
 {
     var template = new WidevineMessage
     {
@@ -250,4 +250,17 @@ public string ConfigureWidevineLicenseTemplate()
 
     string configuration = JsonConvert.SerializeObject(template);
     return configuration;
+}
+
+private static byte[] GetRandomBuffer(int length)
+{
+    var returnValue = new byte[length];
+
+    using (var rng =
+        new System.Security.Cryptography.RNGCryptoServiceProvider())
+    {
+        rng.GetBytes(returnValue);
+    }
+
+    return returnValue;
 }
