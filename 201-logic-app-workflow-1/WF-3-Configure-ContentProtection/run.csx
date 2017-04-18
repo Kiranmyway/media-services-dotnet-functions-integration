@@ -91,8 +91,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         return req.CreateResponse(HttpStatusCode.BadRequest);
     }
 
-   
-
     return req.CreateResponse(HttpStatusCode.OK, new
     {
         AssetId = asset.Id,
@@ -122,16 +120,16 @@ public void AddOpenAuthorizationPolicy(IContentKey contentKey)
     string widevineLicenseTemplate = ConfigureWidevineLicenseTemplate();
 
     IContentKeyAuthorizationPolicyOption playReadyPolicy =
-        _mediaContext.ContentKeyAuthorizationPolicyOptions.Create("",
+        _context.ContentKeyAuthorizationPolicyOptions.Create("",
             ContentKeyDeliveryType.PlayReadyLicense,
                 restrictions, playReadyLicenseTemplate);
 
     IContentKeyAuthorizationPolicyOption widevinePolicy =
-        _mediaContext.ContentKeyAuthorizationPolicyOptions.Create("",
+        _context.ContentKeyAuthorizationPolicyOptions.Create("",
             ContentKeyDeliveryType.Widevine,
             restrictions, widevineLicenseTemplate);
 
-    IContentKeyAuthorizationPolicy contentKeyAuthorizationPolicy = _mediaContext.
+    IContentKeyAuthorizationPolicy contentKeyAuthorizationPolicy = _context.
                 ContentKeyAuthorizationPolicies.
                 CreateAsync("Deliver Common Content Key with no restrictions").
                 Result;
