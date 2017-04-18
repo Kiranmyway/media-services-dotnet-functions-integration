@@ -49,8 +49,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     log.Info("Input - Valid IngestAssetConfig was loaded.");
 
 
-    IJob job = null;
-    IAsset outputAsset = null;
     try
     {
         // Load AMS account context
@@ -64,7 +62,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             log.Info("Asset not found - " + assetid);
             return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Asset not found" });
         }
-        log.Info("Asset found, Asset ID : " + asset.Id);
+        log.Info("Asset found, Asset ID : " + assetid);
 
         if (!asset.ContentKeys.Any() && !asset.DeliveryPolicies.Any())
         {
@@ -82,7 +80,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             asset.ContentKeys.Add(key);
            
             AddOpenAuthorizationPolicy(key);
-            CreateAssetDeliveryPolicy(assetId, key);
+            CreateAssetDeliveryPolicy(assetid, key);
         }
     }
     catch (Exception ex)
@@ -179,4 +177,77 @@ public void CreateAssetDeliveryPolicy(IAsset asset, IContentKey key)
     // Add AssetDelivery Policy to the asset
     asset.DeliveryPolicies.Add(assetDeliveryPolicy);
 
+}
+
+
+public string ConfigurePlayReadyLicenseTemplate()
+{
+    // The following code configures PlayReady License Template using .NET classes
+    // and returns the XML string.
+
+    //The PlayReadyLicenseResponseTemplate class represents the template for the response sent back to the end user. 
+    //It contains a field for a custom data string between the license server and the application 
+    //(may be useful for custom app logic) as well as a list of one or more license templates.
+    PlayReadyLicenseResponseTemplate responseTemplate = new PlayReadyLicenseResponseTemplate();
+
+    // The PlayReadyLicenseTemplate class represents a license template for creating PlayReady licenses
+    // to be returned to the end users. 
+    //It contains the data on the content key in the license and any rights or restrictions to be 
+    //enforced by the PlayReady DRM runtime when using the content key.
+    PlayReadyLicenseTemplate licenseTemplate = new PlayReadyLicenseTemplate();
+    //Configure whether the license is persistent (saved in persistent storage on the client) 
+    //or non-persistent (only held in memory while the player is using the license).  
+    licenseTemplate.LicenseType = PlayReadyLicenseType.Nonpersistent;
+
+    // AllowTestDevices controls whether test devices can use the license or not.  
+    // If true, the MinimumSecurityLevel property of the license
+    // is set to 150.  If false (the default), the MinimumSecurityLevel property of the license is set to 2000.
+    licenseTemplate.AllowTestDevices = true;
+
+    // You can also configure the Play Right in the PlayReady license by using the PlayReadyPlayRight class. 
+    // It grants the user the ability to playback the content subject to the zero or more restrictions 
+    // configured in the license and on the PlayRight itself (for playback specific policy). 
+    // Much of the policy on the PlayRight has to do with output restrictions 
+    // which control the types of outputs that the content can be played over and 
+    // any restrictions that must be put in place when using a given output.
+    // For example, if the DigitalVideoOnlyContentRestriction is enabled, 
+    //then the DRM runtime will only allow the video to be displayed over digital outputs 
+    //(analog video outputs won’t be allowed to pass the content).
+
+    //IMPORTANT: These types of restrictions can be very powerful but can also affect the consumer experience. 
+    // If the output protections are configured too restrictive, 
+    // the content might be unplayable on some clients. For more information, see the PlayReady Compliance Rules document.
+
+    // For example:
+    //licenseTemplate.PlayRight.AgcAndColorStripeRestriction = new AgcAndColorStripeRestriction(1);
+
+    responseTemplate.LicenseTemplates.Add(licenseTemplate);
+
+    return MediaServicesLicenseTemplateSerializer.Serialize(responseTemplate);
+}
+
+public string ConfigureWidevineLicenseTemplate()
+{
+    var template = new WidevineMessage
+    {
+        allowed_track_types = AllowedTrackTypes.SD_HD,
+        content_key_specs = new[]
+        {
+                    new ContentKeySpecs
+                    {
+                        required_output_protection = new RequiredOutputProtection { hdcp = Hdcp.HDCP_NONE},
+                        security_level = 1,
+                        track_type = "SD"
+                    }
+                },
+        policy_overrides = new
+        {
+            can_play = true,
+            can_persist = true,
+            can_renew = false
+        }
+    };
+
+    string configuration = JsonConvert.SerializeObject(template);
+    return configuration;
 }
