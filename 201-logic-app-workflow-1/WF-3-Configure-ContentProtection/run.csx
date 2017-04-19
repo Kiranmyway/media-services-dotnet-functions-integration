@@ -1,7 +1,6 @@
-﻿#r "System.Web"
-#r "Newtonsoft.Json"
+﻿#r "Newtonsoft.Json"
+#r "System.Web"
 #r "Microsoft.WindowsAzure.Storage"
-
 
 #load "../Shared/mediaServicesHelpers.csx"
 #load "../Shared/ingestAssetConfigHelpers.csx"
