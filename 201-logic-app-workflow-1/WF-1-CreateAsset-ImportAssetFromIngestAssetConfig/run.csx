@@ -52,8 +52,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     string _sourceStorageAccountKey = data.SourceStorageAccountKey;
 
     var ingestFileContainer = GetCloudBlobContainer(_sourceStorageAccountName, _sourceStorageAccountKey, "test");
-    var blob = ingestFileContainer.GetBlockBlobReference(data.FileName);
-    var blobString = blob.DownloadText();
+    var blobString = DownloadToMemoryStream(ingestFileContainer, data.FileName);
+
     log.Info("Input - blobString : " + blobString);
 
     // Validate IngestAssetConfig with FileContent

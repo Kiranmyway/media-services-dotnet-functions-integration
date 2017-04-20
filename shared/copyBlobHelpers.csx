@@ -333,13 +333,24 @@ public static async Task<IAsset> CreateAssetFromBlobMultipleFilesAsync(CloudBloc
         }
     }
 
-
     destinationLocator.Delete();
     writePolicy.Delete();
 
     return asset;
 }
 
+static public string DownloadToMemoryStream(CloudBlobContainer cloudBlobContainer, string blobName)
+{
+    CloudBlob cloudBlob = cloudBlobContainer.GetBlobReference(blobName);
 
+    using (MemoryStream memoryStream = new MemoryStream())
+    {
+        cloudBlob.DownloadToStream(memoryStream);
+        memoryStream.Position = 0;
+        StreamReader streamReader = new StreamReader(memoryStream);
+        string blobText = streamReader.ReadToEnd();
+        return blobText;
+    }
+}
 
 
