@@ -56,7 +56,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     var ingestFileContainer = GetCloudBlobContainer(_sourceStorageAccountName, _sourceStorageAccountKey, "test");
     // var blobString = DownloadToMemoryStream(ingestFileContainer, data.FileName);
 
-    CloudBlob cloudBlob = cloudBlobContainer.GetBlobReference(blobName);
+    CloudBlob cloudBlob = ingestFileContainer.GetBlobReference(data.FileName);
     string blobString;
     using (MemoryStream memoryStream = new MemoryStream())
     {
