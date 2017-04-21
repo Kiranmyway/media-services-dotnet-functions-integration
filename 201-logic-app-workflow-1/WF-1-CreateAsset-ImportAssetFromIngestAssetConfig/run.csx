@@ -7,6 +7,8 @@
 
 using System;
 using System.Net;
+using System.Threading;
+using System.IO;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.MediaServices.Client;
 using System.Threading.Tasks;
@@ -52,7 +54,17 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     string _sourceStorageAccountKey = data.SourceStorageAccountKey;
 
     var ingestFileContainer = GetCloudBlobContainer(_sourceStorageAccountName, _sourceStorageAccountKey, "test");
-    var blobString = DownloadToMemoryStream(ingestFileContainer, data.FileName);
+    // var blobString = DownloadToMemoryStream(ingestFileContainer, data.FileName);
+
+    CloudBlob cloudBlob = cloudBlobContainer.GetBlobReference(blobName);
+    string blobString;
+    using (MemoryStream memoryStream = new MemoryStream())
+    {
+        cloudBlob.DownloadToStream(memoryStream);
+        memoryStream.Position = 0;
+        StreamReader streamReader = new StreamReader(memoryStream);
+        blobString = streamReader.ReadToEnd();
+    }
 
     log.Info("Input - blobString : " + blobString);
 
