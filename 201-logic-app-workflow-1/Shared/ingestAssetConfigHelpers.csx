@@ -20,7 +20,7 @@ public class IngestAsset
     public List<AssetFile> AssetFiles { get; set; }
     public string AssetCreationOption { get; set; }
     public AssetCreationOptions CreationOption = AssetCreationOptions.None;
-    
+
     public void setAssetCreationOption()
     {
         switch (this.AssetCreationOption)

@@ -28,6 +28,13 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
     log.Info("Request : " + jsonContent);
 
+    if (data.AssetId == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass AssetId in the input object" });
+    if (data.IngestAssetConfigJson == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass IngestAssetConfigJson in the input object" });
+    log.Info("Input - Asset Id : " + data.AssetId);
+    log.Info("Input - IngestAssetConfigJson : " + data.IngestAssetConfigJson);
+
     // Validate input objects
     int delay = 15000;
     if (data.DestinationContainer == null)
@@ -75,6 +82,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     return req.CreateResponse(HttpStatusCode.OK, new
     {
-        CopyStatus = copyStatus
+        CopyStatus = copyStatus,
+        AssetId = newAsset.Id,
+        IngestFileContent = ingestAssetConfigJson
     });
 }

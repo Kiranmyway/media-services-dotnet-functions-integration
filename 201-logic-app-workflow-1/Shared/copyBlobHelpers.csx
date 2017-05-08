@@ -89,43 +89,49 @@ static public CopyStatus MonitorBlobContainer(CloudBlobContainer destinationBlob
 
 public static async Task CopyBlobsToTargetContainer(CloudBlobContainer sourceContainer, CloudBlobContainer targetContainer, TraceWriter log)
 {
-    try{
-        foreach(var blob in sourceContainer.ListBlobs(String.Empty, true, BlobListingDetails.None,null,null) )
+    try
+    {
+        foreach (var blob in sourceContainer.ListBlobs(String.Empty, true, BlobListingDetails.None, null, null))
         {
             log.Info($"Blob URI: {blob.Uri}");
-            if (blob is CloudBlockBlob){
+            if (blob is CloudBlockBlob)
+            {
                 CloudBlockBlob sourceBlob = (CloudBlockBlob)blob;
                 log.Info($"Blob Name: {sourceBlob.Name}");
                 CloudBlockBlob targetBlob = targetContainer.GetBlockBlobReference(sourceBlob.Name);
 
-                using (var stream = await sourceBlob.OpenReadAsync()) 
-                {            
-                    await targetBlob.UploadFromStreamAsync(stream);          
+                using (var stream = await sourceBlob.OpenReadAsync())
+                {
+                    await targetBlob.UploadFromStreamAsync(stream);
                 }
 
                 log.Info($"Copied: {sourceBlob.Name}");
             }
         }
-    }catch (Exception ex)
+    }
+    catch (Exception ex)
     {
         log.Error($"ERROR copying blobs to target output: {ex.Message}");
     }
 }
 
-public static CloudBlockBlob GetOutputBlob(CloudBlobContainer sourceContainer,string filter, TraceWriter log)
+public static CloudBlockBlob GetOutputBlob(CloudBlobContainer sourceContainer, string filter, TraceWriter log)
 {
-   CloudBlockBlob outputBlob = null;
+    CloudBlockBlob outputBlob = null;
 
-    try{
-        foreach(var blob in sourceContainer.ListBlobs(filter, true, BlobListingDetails.None,null,null) )
+    try
+    {
+        foreach (var blob in sourceContainer.ListBlobs(filter, true, BlobListingDetails.None, null, null))
         {
             log.Info($"Blob URI: {blob.Uri}");
-            if (blob is CloudBlockBlob){
+            if (blob is CloudBlockBlob)
+            {
                 outputBlob = (CloudBlockBlob)blob;
                 break;
             }
         }
-    }catch (Exception ex)
+    }
+    catch (Exception ex)
     {
         log.Error($"Error getting output blob: {ex.Message}");
     }
@@ -133,21 +139,24 @@ public static CloudBlockBlob GetOutputBlob(CloudBlobContainer sourceContainer,st
     return outputBlob;
 }
 
-public static async Task<IAsset> CreateAssetFromBlob(CloudBlockBlob blob, string assetName, TraceWriter log){
-        IAsset newAsset = null;
+public static async Task<IAsset> CreateAssetFromBlob(CloudBlockBlob blob, string assetName, TraceWriter log)
+{
+    IAsset newAsset = null;
 
-        try{
-            Task<IAsset> copyAssetTask = CreateAssetFromBlobAsync(blob, assetName, log);
-            newAsset = await copyAssetTask;
-            log.Info($"Asset Copied : {newAsset.Id}");
-        }
-        catch(Exception ex){
-            log.Info("Copy Failed");
-            log.Info($"ERROR : {ex.Message}");
-            throw ex;
-        }
+    try
+    {
+        Task<IAsset> copyAssetTask = CreateAssetFromBlobAsync(blob, assetName, log);
+        newAsset = await copyAssetTask;
+        log.Info($"Asset Copied : {newAsset.Id}");
+    }
+    catch (Exception ex)
+    {
+        log.Info("Copy Failed");
+        log.Info($"ERROR : {ex.Message}");
+        throw ex;
+    }
 
-        return newAsset;
+    return newAsset;
 }
 
 /// <summary>
@@ -157,7 +166,7 @@ public static async Task<IAsset> CreateAssetFromBlob(CloudBlockBlob blob, string
 /// <returns>The new asset.</returns>
 public static async Task<IAsset> CreateAssetFromBlobAsync(CloudBlockBlob blob, string assetName, TraceWriter log)
 {
-     //Get a reference to the storage account that is associated with the Media Services account. 
+    //Get a reference to the storage account that is associated with the Media Services account. 
     StorageCredentials mediaServicesStorageCredentials =
         new StorageCredentials(_storageAccountName, _storageAccountKey);
     _destinationStorageAccount = new CloudStorageAccount(mediaServicesStorageCredentials, false);
@@ -175,12 +184,13 @@ public static async Task<IAsset> CreateAssetFromBlobAsync(CloudBlockBlob blob, s
     string destinationContainerName = (new Uri(destinationLocator.Path)).Segments[1];
     CloudBlobContainer assetContainer = destBlobStorage.GetContainerReference(destinationContainerName);
 
-    try{
+    try
+    {
         assetContainer.CreateIfNotExists();
     }
     catch (Exception ex)
     {
-        log.Error ("ERROR:" + ex.Message);
+        log.Error("ERROR:" + ex.Message);
     }
 
     log.Info("Created asset.");
@@ -191,9 +201,9 @@ public static async Task<IAsset> CreateAssetFromBlobAsync(CloudBlockBlob blob, s
     // Copy Blob
     try
     {
-        using (var stream = await blob.OpenReadAsync()) 
-        {            
-            await destinationBlob.UploadFromStreamAsync(stream);          
+        using (var stream = await blob.OpenReadAsync())
+        {
+            await destinationBlob.UploadFromStreamAsync(stream);
         }
 
         log.Info("Copy Complete.");
@@ -208,8 +218,8 @@ public static async Task<IAsset> CreateAssetFromBlobAsync(CloudBlockBlob blob, s
     catch (Exception ex)
     {
         log.Error(ex.Message);
-        log.Info (ex.StackTrace);
-        log.Info ("Copy Failed.");
+        log.Info(ex.StackTrace);
+        log.Info("Copy Failed.");
         throw;
     }
 
@@ -242,10 +252,10 @@ public static async Task<IAsset> CreateAssetFromBlobMultipleFiles(CloudBlockBlob
 
 public static async Task CopyBlob(CloudBlockBlob source, CloudBlockBlob destination)
 {
-        using (var stream = await source.OpenReadAsync())
-        {
-            await destination.UploadFromStreamAsync(stream);
-        }
+    using (var stream = await source.OpenReadAsync())
+    {
+        await destination.UploadFromStreamAsync(stream);
+    }
 
 }
 
@@ -333,13 +343,24 @@ public static async Task<IAsset> CreateAssetFromBlobMultipleFilesAsync(CloudBloc
         }
     }
 
-
     destinationLocator.Delete();
     writePolicy.Delete();
 
     return asset;
 }
 
+static public string DownloadToMemoryStream(CloudBlobContainer cloudBlobContainer, string blobName)
+{
+    CloudBlob cloudBlob = cloudBlobContainer.GetBlobReference(blobName);
 
+    using (MemoryStream memoryStream = new MemoryStream())
+    {
+        cloudBlob.DownloadToStream(memoryStream);
+        memoryStream.Position = 0;
+        StreamReader streamReader = new StreamReader(memoryStream);
+        string blobText = streamReader.ReadToEnd();
+        return blobText;
+    }
+}
 
 
