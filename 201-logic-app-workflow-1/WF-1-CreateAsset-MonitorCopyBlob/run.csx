@@ -2,6 +2,7 @@
 #r "Microsoft.WindowsAzure.Storage"
 
 #load "../Shared/copyBlobHelpers.csx"
+#load "../Shared/ingestAssetConfigHelpers.csx"
 
 using System;
 using System.Net;
